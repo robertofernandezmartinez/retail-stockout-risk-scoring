@@ -1,0 +1,20 @@
+# macOS system files
+.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Jupyter checkpoints
+*/.ipynb_checkpoints/
+
+# Data not to be tracked
+02_Data/02_Validation/
+02_Data/03_Working/
+05_Outputs/
+
+# Machine learning models (kept in Releases)
+04_Models/*.pkl
+
+# Backup files
+*.save
