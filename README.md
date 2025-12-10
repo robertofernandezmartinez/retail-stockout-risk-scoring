@@ -100,7 +100,7 @@ The pipeline is **fully serialized using cloudpickle** for deployment.
 ## 📦 Installation (Local)
 
 ```bash
-# Create environment
+# Create and activate environment
 conda create -n stockout python=3.10
 conda activate stockout
 
