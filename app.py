@@ -20,7 +20,14 @@ def load_pipeline():
 pipeline = load_pipeline()
 
 st.title("Retail Stockout Risk Scoring")
-st.write("Upload your inventory file to estimate stockout probability within 14 days. // stockout_risk = 1 is maximum level of risk")
+st.markdown("""
+Estimate retail stockout risk within 14 days and identify products with the highest financial impact.
+
+- **Stockout Risk**: Probability of running out of stock (0–1)
+- **Expected Loss**: Estimated economic cost if stockout occurs
+
+Use results to prioritize replenishment decisions and prevent lost sales.
+""")
 
 uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
