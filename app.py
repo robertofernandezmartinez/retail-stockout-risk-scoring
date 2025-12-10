@@ -78,7 +78,7 @@ if uploaded_file:
 
         # 🔝 Expected Loss Ranking (all items)
         st.subheader("📊 Expected Loss Ranking (All Items)")
-        ranking_cols = ["product_iD", "category", "economic_loss"]
+        ranking_cols = ["product_id", "category", "economic_loss"]
         ranking_df = df[ranking_cols].sort_values("economic_loss", ascending=False)
 
         st.dataframe(ranking_df, use_container_width=True)
