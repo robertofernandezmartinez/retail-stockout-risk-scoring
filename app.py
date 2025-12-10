@@ -26,8 +26,6 @@ uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
-    st.subheader("📊 Data Preview")
-    st.write(df.head())
 
     # Rename columns to match training
     df = df.rename(columns={
@@ -61,12 +59,12 @@ if uploaded_file:
         probs = pipeline.predict_proba(df)[:, 1]
         df["stockout_risk"] = probs
 
-        # ==== Economic Loss Calculation ====
+        # ==== Expected Loss Calculation ====
         df["demand_14d"] = df["demand_forecast"] * 14
         df["units_at_risk"] = (df["demand_14d"] - df["inventory_level"]).clip(lower=0)
 
         df["profit_per_unit"] = df["price"] - (df["price"] * df["discount"] / 100)
-        df["economic_loss"] = df["stockout_risk"] * df["units_at_risk"] * df["profit_per_unit"]
+        df["expected_loss"] = df["stockout_risk"] * df["units_at_risk"] * df["profit_per_unit"]
 
         # Show predictions table
         st.subheader("📈 Predictions")
@@ -76,10 +74,10 @@ if uploaded_file:
         st.download_button("Download Results", df.to_csv(index=False),
                         file_name="stockout_predictions.csv")
 
-        # 🔝 Expected Loss Ranking (all items)
+        # Expected Loss Ranking (all items)
         st.subheader("📊 Expected Loss Ranking (All Items)")
-        ranking_cols = ["product_id", "category", "economic_loss"]
-        ranking_df = df[ranking_cols].sort_values("economic_loss", ascending=False)
+        ranking_cols = ["product_id", "category", "expected_loss"]
+        ranking_df = df[ranking_cols].sort_values("expected_loss", ascending=False)
 
         st.dataframe(ranking_df, use_container_width=True)
 
