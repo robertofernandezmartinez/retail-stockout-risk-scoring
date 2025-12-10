@@ -61,7 +61,7 @@ if uploaded_file:
         probs = pipeline.predict_proba(df)[:, 1]
         df["stockout_risk"] = probs
 
-        # ==== 💰 Economic Loss Calculation ====
+        # ==== Economic Loss Calculation ====
         df["demand_14d"] = df["demand_forecast"] * 14
         df["units_at_risk"] = (df["demand_14d"] - df["inventory_level"]).clip(lower=0)
 
@@ -76,10 +76,18 @@ if uploaded_file:
         st.download_button("Download Results", df.to_csv(index=False),
                         file_name="stockout_predictions.csv")
 
-        # ==== 🔝 Top Loss Items ====
-        high_risk = df.nlargest(10, "economic_loss")[["product_id", "category", "economic_loss"]]
-        st.subheader("🔝 Top Items by Expected Loss (€)")
-        st.dataframe(high_risk)
+        # 🔝 Expected Loss Ranking (all items)
+        st.subheader("📊 Expected Loss Ranking (All Items)")
+        ranking_cols = ["Product ID", "Category", "Economic_Loss"]
+        ranking_df = df[ranking_cols].sort_values("Economic_Loss", ascending=False)
+
+        st.dataframe(ranking_df, use_container_width=True)
+
+        st.download_button(
+            "📥 Download Expected Loss Ranking (CSV)",
+            ranking_df.to_csv(index=False),
+            file_name="expected_loss_ranking.csv"
+        )
 
     except Exception as e:
         st.error(f"Prediction error: {str(e)}")
