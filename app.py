@@ -4,71 +4,71 @@ import requests
 import os
 import cloudpickle
 
-st.set_page_config(page_title="Retail Stockout Risk Scoring", layout="wide")
-
 MODEL_URL = "https://github.com/robertofernandezmartinez/retail-stockout-risk-scoring/releases/download/v1.0.0/pipe_execution.pkl"
 MODEL_PATH = "pipe_execution.pkl"
 
-# ---------------------------------------------------------
-# Load model safely with caching
-# ---------------------------------------------------------
 @st.cache_resource
 def load_pipeline():
     if not os.path.exists(MODEL_PATH):
-        with st.spinner("📥 Downloading model..."):
+        with st.spinner("Downloading model..."):
             r = requests.get(MODEL_URL)
             with open(MODEL_PATH, "wb") as f:
                 f.write(r.content)
-
     with open(MODEL_PATH, "rb") as f:
         return cloudpickle.load(f)
 
 pipeline = load_pipeline()
 
-# ---------------------------------------------------------
-# UI
-# ---------------------------------------------------------
-st.title("🛒 Retail Stockout Risk Scoring")
-st.write("Upload your inventory file to estimate stockout risk probability within 14 days.")
+st.title("Retail Stockout Risk Scoring")
+st.write("Upload your inventory file to estimate stockout probability within 14 days.")
 
-st.subheader("📤 Upload CSV file")
-uploaded_file = st.file_uploader("Upload CSV with inventory features", type=["csv"])
+uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
     st.subheader("📊 Data Preview")
-    st.dataframe(df.head())
+    st.write(df.head())
 
+    # Rename columns to match training
+    df = df.rename(columns={
+        "Date": "date",
+        "Store ID": "store_id",
+        "Product ID": "product_id",
+        "Category": "category",
+        "Region": "region",
+        "Inventory Level": "inventory_level",
+        "Units Sold": "units_sold",
+        "Units Ordered": "units_ordered",
+        "Demand Forecast": "demand_forecast",
+        "Price": "price",
+        "Discount": "discount",
+        "Weather Condition": "weather",
+        "Holiday/Promotion": "holiday_promo",
+        "Competitor Pricing": "competitor_pricing",
+        "Seasonality": "seasonality"
+    })
+
+    # Convert date column
+    if "date" in df.columns:
+        df["date"] = pd.to_datetime(df["date"], errors="coerce")
+
+    # Convert categorical
+    if "holiday_promo" in df.columns:
+        df["holiday_promo"] = df["holiday_promo"].astype("category")
+
+    # Predict
     try:
-        # Ensure correct feature alignment
-        expected_cols = pipeline.feature_names_in_
-        df = df.reindex(columns=expected_cols, fill_value=0)
-
-        # Ensure date exists if required
-        if "date" in df.columns:
-            df["date"] = pd.to_datetime(df["date"], errors="coerce")
-
-        # Predict
-        preds = pipeline.predict_proba(df)[:, 1]
-        df["stockout_risk"] = preds.round(3)
-
+        probs = pipeline.predict_proba(df)[:, 1]
+        df["stockout_risk"] = probs
+       
         st.subheader("📈 Predictions")
-        st.dataframe(df)
+        st.write(df)
 
-        st.download_button(
-            label="⬇️ Download Results",
-            data=df.to_csv(index=False),
-            file_name="predictions.csv",
-            mime="text/csv"
-        )
-
-        # 🔝 Highlight top risk products
-        st.subheader("🔥 Top Products at Highest Risk")
-        top_risk = df.sort_values(by="stockout_risk", ascending=False).head(10)
-        st.table(top_risk[["stockout_risk"] + list(df.columns[:5])])
+        st.download_button("Download Results", df.to_csv(index=False),
+                           file_name="stockout_predictions.csv")
 
     except Exception as e:
-        st.error(f"❌ Prediction failed: {str(e)}")
+        st.error(f"Prediction error: {str(e)}")
 
 else:
-    st.info("📎 Upload a CSV file to begin scoring.")
+    st.info("Upload a CSV to begin scoring.")
