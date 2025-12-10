@@ -77,7 +77,7 @@ if uploaded_file:
                         file_name="stockout_predictions.csv")
 
         # ==== 🔝 Top Loss Items ====
-        high_risk = df.nlargest(10, "Economic_Loss")[["Product ID", "Category", "Economic_Loss"]]
+        high_risk = df.nlargest(10, "economic_loss")[["product_id", "category", "economic_loss"]]
         st.subheader("🔝 Top Items by Expected Loss (€)")
         st.dataframe(high_risk)
 
