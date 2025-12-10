@@ -53,23 +53,22 @@ but also **financial impact**, improving decision-making.
 
 ## 📁 Project Structure
 
+📦 retail-stockout-risk-scoring
 │
 ├── 02_Data/
-│ └── 01_Raw/ <- Original inventory dataset
+│   └── 01_Raw/                     <- Original inventory dataset
 │
-├── 03_Notebooks/ <- EDA, Feature Engineering, Training, etc.
+├── 03_Notebooks/                   <- EDA, Feature Engineering, Training, Retraining
 │
-├── 04_Models/
-│ └── pipe_execution.pkl <- Model artifact stored in Releases (⚠️ ignored in Git)
+├── 04_Models/                      <- Model artifacts
+│   └── pipe_execution.pkl          <- Loaded by Streamlit (file stored in Releases)
 │
-├── 05_Outputs/ <- Generated predictions (ignored in Git)
+├── 05_Outputs/                     <- Auto-generated predictions (ignored in Git)
 │
-├── app.py <- Streamlit application
-├── requirements.txt <- Dependencies
-└── README.md <- Documentation
+├── app.py                          <- Streamlit scoring application
+├── requirements.txt                <- Python dependencies
+└── README.md                       <- Documentation (this file)
 
-
----
 
 ## 🧠 Model Overview
 
