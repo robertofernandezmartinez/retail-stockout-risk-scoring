@@ -1,20 +1,20 @@
-# macOS system files
-.DS_Store
-
-# Python cache
+# Virtual Environments
+venv/
+.env
 __pycache__/
 *.pyc
+.DS_Store
 
-# Jupyter checkpoints
-*/.ipynb_checkpoints/
+# Data files (Exclude large files, keep only the small raw sample if needed)
+02_Data/**/*.csv
+02_Data/**/*.pickle
+02_Data/**/*.pkl
+02_Data/**/*.csv
+!02_Data/01_Raw/retail_store_inventory.csv
 
-# Data not to be tracked
-02_Data/02_Validation/
-02_Data/03_Working/
-05_Outputs/
-
-# Machine learning models (kept in Releases)
+# Models
 04_Models/*.pkl
+!04_Models/full_pipeline_14day_strategic.pkl
 
-# Backup files
-*.save
+# Outputs
+05_Outputs/
