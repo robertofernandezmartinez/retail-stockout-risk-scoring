@@ -9,8 +9,6 @@ By applying a custom Business Logic layer to a calibrated XGBoost model, the sys
 Try the interactive "What-if" simulation dashboard here 👇
 👉 **https://retail-stockout-risk-scoring.streamlit.app/**
 
-*(Note: Connect your GitHub repository to [Streamlit Community Cloud](https://share.streamlit.io/) to activate this URL)*
-
 ## 📌 Executive Summary
 Retailers operating with global supply chains often face a high risk of stockouts. Initially, this project aimed to predict stockouts using deterministic rules (Inventory < 10), but an exploratory data audit revealed a **Data Leakage trap** that caused a false 1.0 AUC, generating severe alert fatigue.
 
