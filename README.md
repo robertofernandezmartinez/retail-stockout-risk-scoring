@@ -33,7 +33,8 @@ This allows ranking products not only by the probability of shortage but by **fi
 - **Key Methodological Decisions:**
   - **Stochastic Decoupling:** Injected Gaussian noise to simulate real-world ERP lags, forcing the model to learn genuine market patterns rather than hard-coded thresholds.
   - **Data Leakage Prevention:** Removed deterministic variables (future demand) from the feature space to ensure the model remains robust in production.
-  - **Cost-Sensitive Learning:** Handled class imbalance (85/15) natively using `scale_pos_weight` to preserve the integrity of predicted probabilities for business decision-making.
+  - **Cost-Sensitive Learning:** Handled class imbalance (85/15) natively using `scale_pos_weight` to preserve the integrity of predicted probabilities.
+  - **Encapsulated Inference Architecture:** The final `.pkl` artifact contains a custom `TransformerMixin` class. This allows the interactive Streamlit dashboard to ingest raw user inputs and autonomously handle feature mapping, cyclic time engineering, and imputation on the fly, guaranteeing zero training-serving skew.
 
 ## 📁 Repository Structure
 
