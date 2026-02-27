@@ -63,30 +63,30 @@ st.title("📦 Strategic Stockout Early Warning System")
 st.markdown(f"**Target Window:** 14-Day Strategic Replenishment | **Model Status:** Calibrated (AUC 0.91)")
 st.markdown("---")
 
-# Prepare input dataframe (must match pipeline feature order exactly)
+# 4. PREPARE INPUT (Labels corrected for Model compatibility)
 input_df = pd.DataFrame({
-    'store_id': ['STR_PROD_99'], # Simulated production ID
-    'product_id': ['PROD_FINAL_CHECK'], # Simulated production ID
-    'category': [category],
-    'region': [region],
-    'weather': ['Clear'],
-    'holiday_promo': ['None'],
-    'seasonality': ['Regular'],
-    'month': ['2'],
-    'day_of_week': ['3'],
-    'inventory_level': [float(inv_level)],
-    'units_sold': [float(units_sold)],
-    'price': [float(price)],
-    'discount': [float(discount)],
-    'competitor_pricing': [float(comp_price)],
-    'is_weekend': [1 if is_weekend else 0]
+    'Store ID': ['STR_PROD_99'],
+    'Product ID': ['PROD_FINAL_CHECK'],
+    'Category': [category],
+    'Region': [region],
+    'Weather Condition': ['Clear'],
+    'Holiday/Promotion': ['None'],
+    'Seasonality': ['Regular'],
+    'Month': ['2'],
+    'Day of Week': ['3'],
+    'Inventory Level': [float(inv_level)],
+    'Units Sold': [float(units_sold)],
+    'Price': [float(price)],
+    'Discount': [float(discount)],
+    'Competitor Pricing': [float(comp_price)],
+    'Is Weekend': [1 if is_weekend else 0]
 })
 
-# Explicit casting to ensure pipeline compatibility (Strings for Encoders)
-cat_cols = ['store_id', 'category', 'region', 'weather', 'holiday_promo', 'seasonality', 'month', 'day_of_week', 'product_id']
+# Cast as string for the model's encoder
+cat_cols = ['Store ID', 'Category', 'Region', 'Weather Condition', 'Holiday/Promotion', 'Seasonality', 'Month', 'Day of Week', 'Product ID']
 for col in cat_cols:
     input_df[col] = input_df[col].astype(str)
-
+    
 # 5. INFERENCE & ERROR HANDLING
 # Converting prob to a native Python float to satisfy st.progress()
 prob_raw = pipeline.predict_proba(input_df)[0][1]
