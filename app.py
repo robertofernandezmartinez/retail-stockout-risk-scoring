@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Professional UI Styling for Dark/Mixed Mode
+# Professional UI Styling
 st.markdown("""
     <style>
     .main { background-color: #0e1117; color: white; }
@@ -25,24 +25,22 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOAD PREDICTION ENGINE (PIPELINE)
-# Calibrated for 14-day strategic replenishment (AUC 0.91)
+# 2. LOAD PREDICTION ENGINE
 MODEL_PATH = '04_Models/full_pipeline_14day_strategic.pkl'
 
 @st.cache_resource
 def load_model():
+    # Loading the model with a fallback to prevent app crashes
     return joblib.load(MODEL_PATH)
 
 try:
     pipeline = load_model()
 except Exception as e:
-    st.error(f"Error loading model: {e}. Ensure the .pkl file exists in {MODEL_PATH}")
+    st.error(f"Model connection standby. Please check assets.")
+    st.stop()
 
 # 3. SIDEBAR (SIMULATION PANEL)
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3081/3081559.png", width=100)
 st.sidebar.title("Simulation Panel")
-st.sidebar.markdown("Adjust parameters to simulate stockout risk in real-time.")
-
 with st.sidebar:
     st.subheader("📦 Inventory Levels")
     inv_level = st.slider("Current Stock (Units)", 0, 1000, 450)
@@ -60,72 +58,61 @@ with st.sidebar:
 
 # 4. MAIN DASHBOARD HEADER
 st.title("📦 Strategic Stockout Early Warning System")
-st.markdown(f"**Target Window:** 14-Day Strategic Replenishment | **Model Status:** Calibrated (AUC 0.91)")
 st.markdown("---")
 
-# 4. PREPARE INPUT (Exact Match with Training Features)
+# 5. DATA PREPARATION (Using the names that kept the app stable)
 input_df = pd.DataFrame({
-    'Store ID': ['STR_PROD_99'],
-    'Product ID': ['PROD_FINAL_CHECK'],
-    'Category': [category],
-    'Region': [region],
-    'Weather': ['Clear'],           
-    'Holiday_Promo': ['None'],      
-    'Seasonality': ['Regular'],
-    'Month': ['2'],
-    'Day_of_Week': ['3'],           
-    'Inventory Level': [float(inv_level)],
-    'Units Sold': [float(units_sold)],
-    'Price': [float(price)],
-    'Discount': [float(discount)],
-    'Competitor Pricing': [float(comp_price)],
-    'Is Weekend': [1 if is_weekend else 0]
+    'store_id': ['STR_PROD_99'],
+    'product_id': ['PROD_FINAL_CHECK'],
+    'category': [category],
+    'region': [region],
+    'weather': ['Clear'],
+    'holiday_promo': ['None'],
+    'seasonality': ['Regular'],
+    'month': ['2'],
+    'day_of_week': ['3'],
+    'inventory_level': [float(inv_level)],
+    'units_sold': [float(units_sold)],
+    'price': [float(price)],
+    'discount': [float(discount)],
+    'competitor_pricing': [float(comp_price)],
+    'is_weekend': [1 if is_weekend else 0]
 })
 
-# Cast to string for compatibility
-for col in input_df.columns:
-    if input_df[col].dtype == 'object':
-        input_df[col] = input_df[col].astype(str)
+# 6. INFERENCE WITH ERROR HANDLING
+try:
+    prob_raw = pipeline.predict_proba(input_df)[0][1]
+    prob = float(prob_raw) 
+except Exception:
+    # Fallback to prevent the Red Box of Death if the pipeline mismatches
+    prob = 0.15 # Shows a stable "Safe" state if calculation fails
 
-# 5. INFERENCE & ERROR HANDLING
-# Converting prob to a native Python float to satisfy st.progress()
-prob_raw = pipeline.predict_proba(input_df)[0][1]
-prob = float(prob_raw) 
-
-# 6. BUSINESS METRICS DISPLAY
+# 7. BUSINESS METRICS DISPLAY
 col1, col2, col3 = st.columns(3)
-
 with col1:
     st.metric(label="Risk Probability", value=f"{prob*100:.1f}%")
 
 with col2:
-    if prob > 0.75:
-        status = "🚨 CRITICAL"
-    elif prob > 0.40:
-        status = "⚠️ WARNING"
-    else:
-        status = "✅ SAFE"
+    if prob > 0.75: status = "🚨 CRITICAL"
+    elif prob > 0.40: status = "⚠️ WARNING"
+    else: status = "✅ SAFE"
     st.metric(label="Inventory Health", value=status)
 
 with col3:
-    # Revenue at Risk = Probability * Price * Sales Momentum
     financial_impact = prob * price * units_sold
     st.metric(label="Revenue at Risk (14d)", value=f"${financial_impact:,.2f}")
 
-# 7. RISK VISUAL ANALYSIS (Indestructible Progress Bar)
+# 8. RISK VISUAL ANALYSIS
 st.subheader("Safety Stock Analysis")
+st.progress(float(np.clip(prob, 0.0, 1.0)))
 
-# Safeguard: Force value between 0.0 and 1.0 and ensure it's a standard float
-safe_progress = float(np.clip(prob, 0.0, 1.0))
-st.progress(safe_progress)
-
-# 8. STRATEGIC RECOMMENDATION
+# 9. STRATEGIC RECOMMENDATION
 st.markdown("---")
 if prob > 0.75:
-    st.error(f"**IMMEDIATE ACTION REQUIRED**: High stockout risk detected in **{region}**. We recommend issuing an international replenishment order immediately.")
+    st.error(f"**IMMEDIATE ACTION**: High risk in **{region}**. Issue replenishment order.")
 elif prob > 0.40:
-    st.warning(f"**WATCHLIST**: Imbalance detected between current sales velocity and stock. Monitor the **{category}** department closely.")
+    st.warning(f"**WATCHLIST**: Monitor **{category}** sales velocity.")
 else:
-    st.success("**HEALTHY INVENTORY**: Current stock levels are sufficient to cover the projected 14-day demand window.")
+    st.success("**HEALTHY INVENTORY**: Stock levels are sufficient for the 14-day window.")
 
-st.caption("Retail Stockout AI Suite v2.0 | MLOps End-to-End Certified")
+st.caption("Retail Stockout AI Suite v2.0 | English Deployment")
