@@ -63,17 +63,17 @@ st.title("📦 Strategic Stockout Early Warning System")
 st.markdown(f"**Target Window:** 14-Day Strategic Replenishment | **Model Status:** Calibrated (AUC 0.91)")
 st.markdown("---")
 
-# 4. PREPARE INPUT (Labels corrected for Model compatibility)
+# 4. PREPARE INPUT (Exact Match with Training Features)
 input_df = pd.DataFrame({
     'Store ID': ['STR_PROD_99'],
     'Product ID': ['PROD_FINAL_CHECK'],
     'Category': [category],
     'Region': [region],
-    'Weather Condition': ['Clear'],
-    'Holiday/Promotion': ['None'],
+    'Weather': ['Clear'],           
+    'Holiday_Promo': ['None'],      
     'Seasonality': ['Regular'],
     'Month': ['2'],
-    'Day of Week': ['3'],
+    'Day_of_Week': ['3'],           
     'Inventory Level': [float(inv_level)],
     'Units Sold': [float(units_sold)],
     'Price': [float(price)],
@@ -82,11 +82,11 @@ input_df = pd.DataFrame({
     'Is Weekend': [1 if is_weekend else 0]
 })
 
-# Cast as string for the model's encoder
-cat_cols = ['Store ID', 'Category', 'Region', 'Weather Condition', 'Holiday/Promotion', 'Seasonality', 'Month', 'Day of Week', 'Product ID']
-for col in cat_cols:
-    input_df[col] = input_df[col].astype(str)
-    
+# Cast to string for compatibility
+for col in input_df.columns:
+    if input_df[col].dtype == 'object':
+        input_df[col] = input_df[col].astype(str)
+
 # 5. INFERENCE & ERROR HANDLING
 # Converting prob to a native Python float to satisfy st.progress()
 prob_raw = pipeline.predict_proba(input_df)[0][1]
